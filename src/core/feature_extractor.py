@@ -6,6 +6,13 @@ import warnings
 
 class ExtratorMetaCaracteristicas:
     def __init__(self):
+        # Inicializa o vetorizador TF-IDF para analisar nomes das colunas
+        self.vetorizador_tfidf = TfidfVectorizer(
+            max_features=50,
+            lowercase=True,
+            analyzer='char_wb',
+            ngram_range=(2, 4)
+        )
         self.nomes_colunas_ajustados = False
         
     def _pode_converter_para_numerico(self, valor):
@@ -28,6 +35,7 @@ class ExtratorMetaCaracteristicas:
         """Treina o vetorizador com os nomes das colunas disponíveis."""
         if nomes_colunas:
             try:
+                self.vetorizador_tfidf.fit(nomes_colunas)
                 self.nomes_colunas_ajustados = True
             except: self.nomes_colunas_ajustados = False
                 
@@ -61,6 +69,7 @@ class ExtratorMetaCaracteristicas:
         # Embeddings do nome da coluna (se disponível)
         if self.nomes_colunas_ajustados and nome_coluna:
             try:
+                emb = self.vetorizador_tfidf.transform([nome_coluna]).toarray()[0]
                 for i, v in enumerate(emb): caracteristicas[f'nm_emb_{i}'] = v
             except:
                 for i in range(50): caracteristicas[f'nm_emb_{i}'] = 0
